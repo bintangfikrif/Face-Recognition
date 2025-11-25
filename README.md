@@ -19,7 +19,7 @@ Topik utama tugas adalah membangun sistem presensi mahasiswa berbasis *Face Reco
 ## Struktur Direktori Proyek
 
 ```
-project-face-recognition/
+Face-Recognition/
 │
 ├── data_raw/ # Dataset asli 
 ├── data_processed/ # Dataset hasil preprocessing
@@ -29,7 +29,7 @@ project-face-recognition/
 ├── utils/ # Helper functions
 ├── requirements.txt # Dependency library
 └── README.md # Dokumentasi project
-```
+```S
 
 ## Dataset
 

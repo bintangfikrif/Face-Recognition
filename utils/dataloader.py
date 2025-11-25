@@ -17,7 +17,7 @@ def load_dataset():
         folder_path = os.path.join(DATA_DIR, folder)
 
         for filename in os.listdir(folder_path):
-            if filename.lower().endswith((".jpg", ".png", ".jpeg")):
+            if filename.lower().endswith((".jpg", ".png", ".jpeg", ".webp")):
                 img_path = os.path.join(folder_path, filename)
                 img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
                 img = cv2.resize(img, TARGET_SIZE)
