@@ -21,13 +21,20 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # --- UTILS ---
 @st.cache_resource
 def load_label_map():
-    """Reconstruct label map from data_processed directory."""
-    if not os.path.exists(DATA_PROCESSED_DIR):
-        return {}
+    """Reconstruct label map from classes.txt or data_processed directory."""
+    # Priority 1: classes.txt (for deployment)
+    classes_file = os.path.join(os.path.dirname(__file__), '..', 'classes.txt')
+    if os.path.exists(classes_file):
+        with open(classes_file, 'r') as f:
+            classes = [line.strip() for line in f.readlines() if line.strip()]
+        return {i: name for i, name in enumerate(classes)}
+
+    # Priority 2: data_processed (for local dev)
+    if os.path.exists(DATA_PROCESSED_DIR):
+        folders = sorted([d for d in os.listdir(DATA_PROCESSED_DIR) if os.path.isdir(os.path.join(DATA_PROCESSED_DIR, d))])
+        return {i: folder for i, folder in enumerate(folders)}
     
-    folders = sorted([d for d in os.listdir(DATA_PROCESSED_DIR) if os.path.isdir(os.path.join(DATA_PROCESSED_DIR, d))])
-    idx_to_class = {i: folder for i, folder in enumerate(folders)}
-    return idx_to_class
+    return {}
 
 @st.cache_resource
 def load_model(model_path, model_name, num_classes):
