@@ -2,12 +2,12 @@
 torch>=2.1.1
 torchvision>=0.16.1
 
-# Vision Mamba Dependencies
-causal-conv1d>=1.1.0
-mamba-ssm>=1.0.1
-
 # Data & Image Processing
 albumentations
 opencv-python-headless
 scikit-learn
 timm
+streamlit
+mtcnn
+
+
