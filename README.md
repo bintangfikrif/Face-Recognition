@@ -48,55 +48,42 @@ Data raw yang sudah dikumpulkan dalam satu folder `data_raw/` selanjutnya dilaku
 
 ## Model yang digunakan
 
-Pada project ini, digunakan model **FaceNet** sebagai model utama untuk klasifikasi wajah. Dengan kombinasi hyperpamater sebagai berikut.
+Pada project ini, digunakan model **InceptionResnetV1** (pretrained VGGFace2) sebagai model utama untuk klasifikasi wajah. Model ini dipilih karena performanya yang *state-of-the-art* dalam pengenalan wajah dan arsitekturnya yang efisien.
 
 ### Hyperparameter
-- Batch Size: 32
-- Learning Rate: 1e-4
-- Epoch: 50
-- Image Size: 160x160
-- Optimizer: Adam
-- Weight Decay: 1e-4
-- Scheduler: StepLR
-- Num Workers: 2
+- **Batch Size**: 16
+- **Learning Rate**: 1e-3
+- **Epoch**: 20 (per Fold)
+- **Image Size**: 160x160
+- **Optimizer**: Adam
+- **Weight Decay**: 1e-3
+- **Scheduler**: ReduceLROnPlateau
+- **Loss Function**: CrossEntropyLoss (Label Smoothing 0.1)
+
+### K-Fold Cross Validation
+
+Untuk memastikan validitas model dan mengatasi keterbatasan jumlah data (*few-shot learning*), kami menggunakan metode **Stratified K-Fold Cross Validation** dengan `k=4`. Pendekatan ini memastikan bahwa setiap sampel data pernah digunakan sebagai data validasi, sehingga evaluasi performa model menjadi lebih bias-free dan robust.
 
 ### Hasil Training
 
-Hasil traning model yang telah dilakukan adalah sebagai berikut
+**Training History (Loss & Accuracy)**
+![InceptionResnetV1 Training Loss](checkpoints/inceptionresnetv1/inceptionResnetv1_trainloss.png)
 
-**Training Loss & Accuracy**
-![FaceNet Training Loss & Accuracy](checkpoints\facenet_run\training_history.png)
+Grafik di atas menunjukkan penurunan loss yang stabil dan peningkatan akurasi seiring berjalannya epoch. Penggunaan *transfer learning* dengan *freeze backbone* terbukti efektif untuk mempercepat konvergensi.
 
-Training loss turun sangat cepat hingga hampir nol, menunjukkan model belajar sangat kuat pada data training. Namun, validation loss hanya menurun di awal lalu stagnan dan berfluktuasi, menandakan model tidak mampu mempertahankan performa di data baru. Perbedaan besar ini menunjukkan adanya overfitting.
+**Confusion Matrix**
+![InceptionResnetV1 Confusion Matrix](checkpoints/inceptionresnetv1/inceptionResnetv1_confmatrix.png)
 
-Training accuracy meningkat hingga hampir 100%, tetapi validation accuracy justru berfluktuasi dan tidak stabil. Hal ini menunjukkan model sangat fit terhadap data training, namun kurang mampu melakukan generalisasi. Pola ini kembali menguatkan indikasi overfitting pada model.
+Confusion matrix menunjukkan kemampuan model dalam membedakan antar kelas mahasiswa dengan sangat baik, dengan mayoritas prediksi berada di diagonal utama (benar).
 
-**Prediction Samples**
-![Swin Transformer Prediction Samples](checkpoints\swin_run_3(best)\prediction_samples.png)
+Hasil Accuracy, Precision, Recall, dan F1-Score dapat dilihat pada tabel berikut:
 
-Dari 5 sampel prediksi, model berhasil menebak 3 dari 5 sampel. Menandakan bahwa model belum maksimal dalam mengenali wajah mahasiswa.
-
-Hasil Uji coba pada Data Test:
-- Top-1 Accuracy: 73.91%
-- Top-5 Accuracy: 86.96%
-
-### DeiT Small
-
-**Training Loss & Accuracy**
-![DeiT Small Training Loss & Accuracy](checkpoints\deit_run\training_history.png)
-
-Training loss menurun dengan sangat cepat hingga hampir nol, menunjukkan model belajar dengan baik pada data training. Sementara itu, validation loss hanya menurun pada awal training lalu bergerak fluktuatif di kisaran yang lebih tinggi, menandakan performa model pada data baru tidak meningkat sebaik di data training. Perbedaan drastis antara keduanya kembali mengindikasikan overfitting.
-
-Training accuracy naik tajam hingga mendekati 100% dalam waktu singkat, tetapi validation accuracy hanya naik di awal dan kemudian berfluktuasi tanpa tren yang stabil. Pola ini menunjukkan bahwa meskipun model sangat akurat pada data training, kemampuannya melakukan generalisasi masih lemah. Ketidakstabilan pada validation accuracy memperkuat kesimpulan bahwa model mengalami overfitting.
-
-**Prediction Samples**
-![DeiT Small Prediction Samples](checkpoints\deit_run\prediction_samples.png)
-
-Dari 5 sampel prediksi, model berhasil menebak 3 dari 5 sampel. Menandakan bahwa model belum maksimal dalam mengenali wajah mahasiswa.
-
-Hasil Uji coba pada Data Test:
-- Top-1 Accuracy: 56.52%
-- Top-5 Accuracy: 69.57%
+| Metric | Value |
+|--------|-------|
+| Accuracy | 94.67% |
+| Precision | 91.7% |
+| Recall | 94.67% |
+| F1-Score | 92.8% |
 
 ## Aplikasi Demo
 
@@ -114,5 +101,3 @@ Aplikasi demo dapat dijalankan dan di deploy dengan menggunakan Streamlit.
 4. **Klasifikasi (Inferensi)**. Bagian wajah yang terdeteksi kemudian diteruskan ke model Deep Learning yang telah dimuat (sesuai pilihan pengguna). Model melakukan inferensi klasifikasi wajah untuk menentukan identitas mahasiswa yang bersangkutan.
 
 5. **Output Hasil**. Aplikasi akan menampilkan hasil prediksi. Hasil tersebut mencakup menampilkan bounding box di sekitar wajah yang terdeteksi. Aplikasi juga menampilkan label prediksi, yang berisi Nama Mahasiswa beserta nilai Confidence (tingkat keyakinan model).
-
-## Kesimpulan
