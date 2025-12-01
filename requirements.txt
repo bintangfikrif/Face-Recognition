@@ -1,14 +1,12 @@
-# Core PyTorch (Colab usually has this, but good to specify)
+# Core PyTorch 
 torch>=2.1.1
 torchvision>=0.16.1
 tensorflow
+facenet-pytorch
 
 # Data & Image Processing
 albumentations
 opencv-python-headless
 scikit-learn
-timm
 streamlit
 mtcnn
-
-

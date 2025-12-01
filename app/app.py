@@ -5,10 +5,11 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import os
 import sys
-import timm
+
 from mtcnn import MTCNN
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+from facenet_pytorch import InceptionResnetV1
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -31,16 +32,14 @@ def load_label_map():
 
     # Priority 2: data_processed (for local dev)
     if os.path.exists(DATA_PROCESSED_DIR):
-        folders = sorted([d for d in os.listdir(DATA_PROCESSED_DIR) if os.path.isdir(os.path.join(DATA_PROCESSED_DIR, d))])
-        return {i: folder for i, folder in enumerate(folders)}
-    
-    return {}
+        return None
 
 @st.cache_resource
-def load_model(model_path, model_name, num_classes):
+def load_model(model_path, num_classes):
     """Load the trained model."""
     try:
-        model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
+        # Initialize InceptionResnetV1 for classification
+        model = InceptionResnetV1(classify=True, num_classes=num_classes)
         model.load_state_dict(torch.load(model_path, map_location=DEVICE))
         model.to(DEVICE)
         model.eval()
@@ -53,10 +52,10 @@ def load_model(model_path, model_name, num_classes):
 def get_detector():
     return MTCNN()
 
-def preprocess_image(image):
+def preprocess_image(image, target_size=160):
     """Preprocess image for inference (Resize -> Normalize -> Tensor)."""
     transform = A.Compose([
-        A.Resize(224, 224),
+        A.Resize(target_size, target_size),
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2()
     ])
@@ -82,37 +81,13 @@ if not idx_to_class:
 else:
     st.sidebar.success(f"Loaded {len(idx_to_class)} classes.")
 
-# 2. Select Model
-if not os.path.exists(MODEL_DIR):
-    st.sidebar.error(f"Model directory not found: {MODEL_DIR}")
+# 2. Load Model
+model_path = os.path.join(MODEL_DIR, 'facenet.pth')
+if not os.path.exists(model_path):
+    st.sidebar.error(f"Model not found: {model_path}")
     st.stop()
 
-model_files = [f for f in os.listdir(MODEL_DIR) if f.endswith('.pth')]
-if not model_files:
-    st.sidebar.warning("No .pth models found in `models/`.")
-    st.stop()
-
-# Prioritize swin_best.pth
-default_index = 0
-if "swin_best.pth" in model_files:
-    default_index = model_files.index("swin_best.pth")
-
-selected_model_file = st.sidebar.selectbox("Select Model", model_files, index=default_index)
-model_path = os.path.join(MODEL_DIR, selected_model_file)
-
-# Determine architecture
-if "swin" in selected_model_file.lower():
-    model_name = "swin_tiny_patch4_window7_224"
-elif "deit" in selected_model_file.lower():
-    model_name = "deit_small_distilled_patch16_224"
-else:
-    st.sidebar.warning("Unknown model architecture. Defaulting to Swin Tiny.")
-    model_name = "swin_tiny_patch4_window7_224"
-
-st.sidebar.info(f"Architecture: `{model_name}`")
-
-# 3. Load Model
-model = load_model(model_path, model_name, len(idx_to_class))
+model = load_model(model_path, len(idx_to_class))
 
 # 4. Confidence Threshold
 confidence_threshold = st.sidebar.slider("Confidence Threshold", 0.0, 1.0, 0.5, 0.05)

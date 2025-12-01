@@ -132,3 +132,5 @@ Aplikasi demo dapat dijalankan dan di deploy dengan menggunakan Streamlit.
 4. **Klasifikasi (Inferensi)**. Bagian wajah yang terdeteksi kemudian diteruskan ke model Deep Learning yang telah dimuat (sesuai pilihan pengguna). Model melakukan inferensi klasifikasi wajah untuk menentukan identitas mahasiswa yang bersangkutan.
 
 5. **Output Hasil**. Aplikasi akan menampilkan hasil prediksi. Hasil tersebut mencakup menampilkan bounding box di sekitar wajah yang terdeteksi. Aplikasi juga menampilkan label prediksi, yang berisi Nama Mahasiswa beserta nilai Confidence (tingkat keyakinan model).
+
+## Kesimpulan
