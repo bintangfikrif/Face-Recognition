@@ -1,4 +1,9 @@
 data_raw
 data_processed
 padded_data_processed
-checkpoints
+checkpoints/deit_run
+checkpoints/swin_run_1
+checkpoints/swin_run_2
+checkpoints/swin_run_3(best)
+checkpoints/facenet_run
+checkpoints/resnet50_run
