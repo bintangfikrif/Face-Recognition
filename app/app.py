@@ -10,6 +10,8 @@ from mtcnn import MTCNN
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from facenet_pytorch import InceptionResnetV1
+from torchvision.models import resnet18
+import torch.nn as nn
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -35,11 +37,17 @@ def load_label_map():
         return None
 
 @st.cache_resource
-def load_model(model_path, num_classes):
+def load_model(model_name, model_path, num_classes):
     """Load the trained model."""
     try:
-        # Initialize InceptionResnetV1 for classification
-        model = InceptionResnetV1(classify=True, num_classes=num_classes)
+        if model_name == 'InceptionResnetV1':
+            # Initialize InceptionResnetV1 for classification
+            model = InceptionResnetV1(classify=True, num_classes=num_classes)
+        elif model_name == 'ResNet18':
+            # Initialize ResNet18
+            model = resnet18(weights=None)
+            model.fc = nn.Linear(model.fc.in_features, num_classes)
+        
         model.load_state_dict(torch.load(model_path, map_location=DEVICE))
         model.to(DEVICE)
         model.eval()
@@ -81,13 +89,28 @@ if not idx_to_class:
 else:
     st.sidebar.success(f"Loaded {len(idx_to_class)} classes.")
 
-# 2. Load Model
-model_path = os.path.join(MODEL_DIR, 'InceptionResnetV1-kfold.pth')
+# 2. Model Selection
+model_options = {
+    'InceptionResnetV1': {
+        'file': 'InceptionResnetV1-kfold.pth',
+        'size': 160
+    },
+    'ResNet18': {
+        'file': 'ResNet18-kfold.pth',
+        'size': 224
+    }
+}
+
+selected_model_name = st.sidebar.selectbox("Select Model", list(model_options.keys()))
+selected_model_info = model_options[selected_model_name]
+
+# 3. Load Model
+model_path = os.path.join(MODEL_DIR, selected_model_info['file'])
 if not os.path.exists(model_path):
     st.sidebar.error(f"Model not found: {model_path}")
     st.stop()
 
-model = load_model(model_path, len(idx_to_class))
+model = load_model(selected_model_name, model_path, len(idx_to_class))
 
 # 4. Confidence Threshold
 confidence_threshold = st.sidebar.slider("Confidence Threshold", 0.0, 1.0, 0.5, 0.05)
@@ -140,7 +163,8 @@ if uploaded_file is not None:
                     face_crop = image.crop((x, y, x+w, y+h))
                     
                     # Inference
-                    input_tensor = preprocess_image(face_crop).to(DEVICE)
+                    target_size = selected_model_info['size']
+                    input_tensor = preprocess_image(face_crop, target_size=target_size).to(DEVICE)
                     
                     with torch.no_grad():
                         outputs = model(input_tensor)
