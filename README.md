@@ -48,13 +48,30 @@ Data raw yang sudah dikumpulkan dalam satu folder `data_raw/` selanjutnya dilaku
 
 ## Model yang digunakan
 
-Pada project ini, digunakan model **InceptionResnetV1** (pretrained VGGFace2) sebagai model utama untuk klasifikasi wajah. Model ini dipilih karena performanya yang *state-of-the-art* dalam pengenalan wajah dan arsitekturnya yang efisien.
+Pada project ini, kami mengeksplorasi dua arsitektur model *Deep Learning* untuk klasifikasi wajah:
+
+1.  **InceptionResnetV1** (pretrained VGGFace2)
+2.  **ResNet18** (pretrained ImageNet)
+
+Kedua model ini dipilih untuk membandingkan performa antara arsitektur yang dikhususkan untuk pengenalan wajah (InceptionResnetV1) dan arsitektur *general purpose* yang lebih ringan (ResNet18).
 
 ### Hyperparameter
+
+**InceptionResnetV1:**
 - **Batch Size**: 16
 - **Learning Rate**: 1e-3
 - **Epoch**: 20 (per Fold)
 - **Image Size**: 160x160
+- **Optimizer**: Adam
+- **Weight Decay**: 1e-3
+- **Scheduler**: ReduceLROnPlateau
+- **Loss Function**: CrossEntropyLoss (Label Smoothing 0.1)
+
+**ResNet18:**
+- **Batch Size**: 16
+- **Learning Rate**: 1e-3
+- **Epoch**: 20 (per Fold)
+- **Image Size**: 224x224
 - **Optimizer**: Adam
 - **Weight Decay**: 1e-3
 - **Scheduler**: ReduceLROnPlateau
@@ -66,6 +83,8 @@ Untuk memastikan validitas model dan mengatasi keterbatasan jumlah data (*few-sh
 
 ### Hasil Training
 
+#### 1. InceptionResnetV1
+
 **Training History (Loss & Accuracy)**
 ![InceptionResnetV1 Training Loss](checkpoints/inceptionresnetv1/inceptionResnetv1_trainloss.png)
 
@@ -76,7 +95,7 @@ Grafik di atas menunjukkan penurunan loss yang stabil dan peningkatan akurasi se
 
 Confusion matrix menunjukkan kemampuan model dalam membedakan antar kelas mahasiswa dengan sangat baik, dengan mayoritas prediksi berada di diagonal utama (benar).
 
-Hasil Accuracy, Precision, Recall, dan F1-Score dapat dilihat pada tabel berikut:
+**Metrik Evaluasi:**
 
 | Metric | Value |
 |--------|-------|
@@ -84,6 +103,23 @@ Hasil Accuracy, Precision, Recall, dan F1-Score dapat dilihat pada tabel berikut
 | Precision | 91.7% |
 | Recall | 94.67% |
 | F1-Score | 92.8% |
+
+#### 2. ResNet18
+
+**Training History (Loss & Accuracy)**
+![ResNet18 Training Loss](checkpoints/resnet18_run/resnet18_trainloss.png)
+
+**Confusion Matrix**
+![ResNet18 Confusion Matrix](checkpoints/resnet18_run/resnet18_confmatrix.png)
+
+**Metrik Evaluasi:**
+
+| Metric | Value |
+|--------|-------|
+| Accuracy | 75% |
+| Precision | 69.44% |
+| Recall | 75% |
+| F1-Score | 70.6% |
 
 ## Aplikasi Demo
 
