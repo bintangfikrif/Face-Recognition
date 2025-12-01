@@ -48,42 +48,24 @@ Data raw yang sudah dikumpulkan dalam satu folder `data_raw/` selanjutnya dilaku
 
 ## Model yang digunakan
 
-### Swin Transformer
+Pada project ini, digunakan model **FaceNet** sebagai model utama untuk klasifikasi wajah. Dengan kombinasi hyperpamater sebagai berikut.
 
-    Swin Transformer adalah model visi berbasis Transformer yang memproses gambar menggunakan jendela bergeser (shifted windows) sehingga mampu menangkap detail lokal dan konteks global secara efisien. Desain hierarkisnya membuat model ini cepat, hemat komputasi, dan sangat kuat untuk berbagai tugas seperti klasifikasi, deteksi, dan pengenalan wajah.
-
-### DeiT Small
-
-    DeiT (Data-efficient Image Transformer) adalah model vision transformer yang dirancang agar efisien dalam data dan komputasi. Model ini menggunakan teknik training khusus seperti knowledge distillation sehingga dapat mencapai akurasi tinggi meski dilatih dengan dataset lebih kecil. Dengan arsitektur yang ringan dan performa kuat, DeiT menjadi alternatif cepat dan efisien untuk berbagai tugas visi komputer.
-
-## Hyperparameter
-
-### Swin Transformer
-
+### Hyperparameter
 - Batch Size: 32
 - Learning Rate: 1e-4
-- Epoch: 20
-- Image Size: 224x224
-- Optimizer: AdamW
-- Weight Decay: 5e-2
-- Scheduler: CosineAnnealingLR
+- Epoch: 50
+- Image Size: 160x160
+- Optimizer: Adam
+- Weight Decay: 1e-4
+- Scheduler: StepLR
+- Num Workers: 2
 
-### DeiT Small
+### Hasil Training
 
-- Batch Size: 32
-- Learning Rate: 1e-3
-- Epoch: 30
-- Image Size: 224x224
-- Optimizer: AdamW
-- Weight Decay: 5e-2
-- Scheduler: CosineAnnealingLR
-
-## Hasil Training
-
-### Swin Transformer
+Hasil traning model yang telah dilakukan adalah sebagai berikut
 
 **Training Loss & Accuracy**
-![Swin Transformer Training Loss & Accuracy](checkpoints\swin_run_3(best)\training_history.png)
+![FaceNet Training Loss & Accuracy](checkpoints\facenet_run\training_history.png)
 
 Training loss turun sangat cepat hingga hampir nol, menunjukkan model belajar sangat kuat pada data training. Namun, validation loss hanya menurun di awal lalu stagnan dan berfluktuasi, menandakan model tidak mampu mempertahankan performa di data baru. Perbedaan besar ini menunjukkan adanya overfitting.
 

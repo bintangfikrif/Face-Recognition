@@ -56,7 +56,7 @@ def preprocess_image(image, target_size=160):
     """Preprocess image for inference (Resize -> Normalize -> Tensor)."""
     transform = A.Compose([
         A.Resize(target_size, target_size),
-        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
         ToTensorV2()
     ])
     # Convert PIL to Numpy
@@ -82,7 +82,7 @@ else:
     st.sidebar.success(f"Loaded {len(idx_to_class)} classes.")
 
 # 2. Load Model
-model_path = os.path.join(MODEL_DIR, 'facenet.pth')
+model_path = os.path.join(MODEL_DIR, 'InceptionResnetV1-kfold.pth')
 if not os.path.exists(model_path):
     st.sidebar.error(f"Model not found: {model_path}")
     st.stop()
