@@ -1,6 +1,9 @@
 # Deep Learning (IF25-40401) Project
 # NeoFace - Face Recognition for Student Attendance 
 
+<p align="center">
+    <img src="poster/Poster Faceless.svg" width="400">
+</p>
 
 Proyek ini dibuat sebagai bagian dari Tugas Besar Mata Kuliah Pembelajaran Mendalam (IF25-40401) di Program Studi Teknik Informatika, Institut Teknologi Sumatera.  
 Topik utama tugas adalah membangun sistem presensi mahasiswa berbasis *Face Recognition* menggunakan model *Deep Learning end-to-end*.
