@@ -6,10 +6,9 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import sys
 
-from mtcnn import MTCNN
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from facenet_pytorch import InceptionResnetV1
+from facenet_pytorch import MTCNN, InceptionResnetV1
 from torchvision.models import resnet18
 import torch.nn as nn
 
@@ -58,19 +57,36 @@ def load_model(model_name, model_path, num_classes):
 
 @st.cache_resource
 def get_detector():
-    return MTCNN()
+    return MTCNN(
+        keep_all=True,
+        device=DEVICE
+    )
 
-def preprocess_image(image, target_size=160):
-    """Preprocess image for inference (Resize -> Normalize -> Tensor)."""
-    transform = A.Compose([
-        A.Resize(target_size, target_size),
-        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-        ToTensorV2()
-    ])
-    # Convert PIL to Numpy
+def preprocess_image(image, model_name, target_size):
+    if model_name == "InceptionResnetV1":
+        transform = A.Compose([
+            A.Resize(target_size, target_size),
+            A.Normalize(
+                mean=(0.5, 0.5, 0.5),
+                std=(0.5, 0.5, 0.5)
+            ),
+            ToTensorV2()
+        ])
+
+    else:
+        transform = A.Compose([
+            A.Resize(target_size, target_size),
+            A.Normalize(
+                mean=(0.485, 0.456, 0.406),
+                std=(0.229, 0.224, 0.225)
+            ),
+            ToTensorV2()
+        ])
+
     image_np = np.array(image)
     augmented = transform(image=image_np)
-    return augmented['image'].unsqueeze(0) # Add batch dimension
+
+    return augmented["image"].unsqueeze(0)
 
 # --- APP UI ---
 st.set_page_config(page_title="Face Recognition Demo", layout="wide", page_icon="👤")
@@ -137,9 +153,9 @@ if uploaded_file is not None:
             image_np = np.array(image)
             
             # MTCNN expects RGB (which PIL provides, but let's be safe with numpy)
-            detections = detector.detect_faces(image_np)
-            
-            if not detections:
+            boxes, probabilities = detector.detect(image)
+
+            if boxes is None:
                 st.warning("No faces detected.")
             else:
                 # Draw boxes on image
@@ -148,14 +164,19 @@ if uploaded_file is not None:
                 
                 results = []
                 
-                for detection in detections:
-                    box = detection['box']
-                    confidence = detection['confidence']
-                    
-                    if confidence < 0.90: # Filter low confidence detections from MTCNN
+                for box, confidence in zip(boxes, probabilities):
+                    if confidence is None or confidence < 0.90:
                         continue
-                        
-                    x, y, w, h = box
+
+                    x1, y1, x2, y2 = box.astype(int)
+
+                    x1 = max(0, x1)
+                    y1 = max(0, y1)
+                    x2 = min(image.width, x2)
+                    y2 = min(image.height, y2)
+
+                    x, y = x1, y1
+                    w, h = x2 - x1, y2 - y1
                     # Ensure within bounds
                     x, y = max(0, x), max(0, y)
                     
@@ -164,7 +185,7 @@ if uploaded_file is not None:
                     
                     # Inference
                     target_size = selected_model_info['size']
-                    input_tensor = preprocess_image(face_crop, target_size=target_size).to(DEVICE)
+                    input_tensor = preprocess_image(face_crop, selected_model_name, target_size=target_size).to(DEVICE)
                     
                     with torch.no_grad():
                         outputs = model(input_tensor)

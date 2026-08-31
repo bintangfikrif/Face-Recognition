@@ -1,12 +1,8 @@
-# Core PyTorch 
-torch>=2.1.1
-torchvision>=0.16.1
-tensorflow
-facenet-pytorch
-
-# Data & Image Processing
-albumentations
-opencv-python-headless
-scikit-learn
-streamlit
-mtcnn
+streamlit==1.49.1
+torch==2.2.2
+torchvision==0.17.2
+facenet-pytorch==2.5.3
+numpy==1.26.4
+Pillow==10.4.0
+albumentations==1.4.18
+opencv-python-headless==4.10.0.84
